@@ -48,12 +48,16 @@ const isProdDeployment =
   process.env.VERCEL === "1" ||
   process.env.VERCEL_ENV === "production";
 
+
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Allow non-browser requests (curl, Postman, etc.)
-    if (!origin) return callback(null, true);
 
-    const normalizedOrigin = normalizeOrigin(origin);
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const normalizedOrigin =
+      normalizeOrigin(origin);
 
     if (
       allowedOrigins.includes(normalizedOrigin) ||
@@ -63,25 +67,32 @@ const corsOptions: cors.CorsOptions = {
       return callback(null, true);
     }
 
-    // In production, allow any HTTPS origin
-    // Safe because auth uses httpOnly cookies (no token-based auth)
-    if (isProdDeployment) {
-      return callback(null, true);
-    }
-
     return callback(
-      new Error(`CORS blocked for origin: ${origin}`)
+      new Error(
+        `CORS blocked for origin: ${origin}`
+      )
     );
   },
 
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "PATCH",
+    "OPTIONS",
+  ],
+
   allowedHeaders: [
     "Content-Type",
     "Authorization",
     "X-Requested-With",
   ],
 };
+
+
 
 app.use(cors(corsOptions));
 
