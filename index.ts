@@ -9,8 +9,8 @@ if (process.env.NODE_ENV === "production") {
 }
 
 connectDB().catch((error) => {
-  // Keep the function process alive so routes can return controlled errors.
-  console.error("Initial DB connection failed:", error);
+  console.error("MongoDB connection failed:", error.message);
+  process.exit(1);
 });
 
 // LOCAL ONLY

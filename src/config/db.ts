@@ -18,13 +18,17 @@ const connectDB = async () => {
   }
 
   connectionPromise = mongoose
-    .connect(uri)
+    .connect(uri, {
+      serverSelectionTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
+    })
     .then((conn) => {
       console.log("MongoDB Connected");
       return conn;
     })
     .catch((error) => {
       connectionPromise = null;
+      console.error("MongoDB connection error:", error.message);
       throw error;
     });
 
