@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-  "module": "commonjs",
-  "moduleResolution": "node",
-    "rootDir": "./src",
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "rootDir": "./",
     "outDir": "./dist",
-    "strict": true,
     "esModuleInterop": true,
+    "strict": true,
     "skipLibCheck": true,
-
+    "ignoreDeprecations": "6.0"
   },
-    "include": ["api/**/*"]
-
+  "include": ["api/**/*"]
 }
