@@ -10,5 +10,8 @@
     "skipLibCheck": true,
     "ignoreDeprecations": "6.0"
   },
-  "include": ["api/**/*"]
+  "include": [
+    "index.ts",
+    "src/**/*"
+  ]
 }
