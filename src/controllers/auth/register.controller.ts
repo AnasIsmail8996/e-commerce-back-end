@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import UserModel from "../../models/user.model";
 import OTPModel from "../../models/otp.model";
 import bcrypt from "bcryptjs";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { verificationEmailTemplate } from "../../verificationTemplate/verificationEmailTemplate";
 import { transporter } from "../../utils/transporter";
 
@@ -29,7 +29,7 @@ export const register = async (req: Request, res: Response) => {
       password: hashPass,
     });
 
-    const otp = uuidv4().slice(0, 6);
+    const otp = randomUUID().replace(/-/g, "").slice(0, 6);
 
     try {
       await transporter.sendMail({

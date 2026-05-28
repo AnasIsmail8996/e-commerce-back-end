@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import UserModel from "../../models/user.model";
 import OTPModel from "../../models/otp.model";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import { verificationEmailTemplate } from "../../verificationTemplate/verificationEmailTemplate";
 import { transporter } from "../../utils/transporter";
 
@@ -19,7 +19,7 @@ export const resetOTPController = async (req: Request, res: Response) => {
       return res.json({ message: "User not found", status: false });
     }
 
-    const otp = uuidv4().slice(0, 6);
+    const otp = randomUUID().replace(/-/g, "").slice(0, 6);
 
     await transporter.sendMail({
       from: process.env.EMAIL,
