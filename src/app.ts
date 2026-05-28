@@ -89,9 +89,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use("/api/auth", authRoutes);
-app.use("/api/products", productsRoutes);
-app.use("/api/orders", orderRoutes);
+const apiRouter = express.Router();
+
+apiRouter.use("/auth", authRoutes);
+apiRouter.use("/products", productsRoutes);
+apiRouter.use("/orders", orderRoutes);
+
+app.use("/api", apiRouter);
 
 app.get("/", (_req, res) => {
   res.json({
