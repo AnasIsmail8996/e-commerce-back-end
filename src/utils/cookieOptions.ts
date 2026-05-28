@@ -1,6 +1,13 @@
 import { CookieOptions } from "express";
 
-const isProd = process.env.NODE_ENV === "production";
+// Detect production: Vercel sets VERCEL=1, and NODE_ENV is "production".
+// The .env file MUST NOT override NODE_ENV or this detection breaks.
+const isProd =
+  process.env.NODE_ENV === "production" ||
+  process.env.VERCEL === "1" ||
+  process.env.VERCEL_ENV === "production" ||
+  process.env.VERCEL_URL !== undefined;
+
 const cookieDomain = process.env.COOKIE_DOMAIN?.trim();
 
 // Dev: proxy → same-origin dev URLs → SameSite=Lax works (no Secure needed)

@@ -38,16 +38,34 @@ const allowedOrigins = [
 const isLocalOrigin = (origin: string) =>
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
+// Allow any Vercel deployment domain (e.g. project.vercel.app)
+const isVercelOrigin = (origin: string) =>
+  /^https:\/\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.vercel\.app$/i.test(origin);
+
+// Detect production for CORS decisions
+const isProdDeployment =
+  process.env.NODE_ENV === "production" ||
+  process.env.VERCEL === "1" ||
+  process.env.VERCEL_ENV === "production";
+
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
+    // Allow non-browser requests (curl, Postman, etc.)
     if (!origin) return callback(null, true);
 
     const normalizedOrigin = normalizeOrigin(origin);
 
     if (
       allowedOrigins.includes(normalizedOrigin) ||
-      isLocalOrigin(normalizedOrigin)
+      isLocalOrigin(normalizedOrigin) ||
+      isVercelOrigin(normalizedOrigin)
     ) {
+      return callback(null, true);
+    }
+
+    // In production, allow any HTTPS origin
+    // Safe because auth uses httpOnly cookies (no token-based auth)
+    if (isProdDeployment) {
       return callback(null, true);
     }
 

@@ -9,6 +9,7 @@ import { forgotPasswordController } from "../../controllers/auth/forgot.password
 import { changePasswordController } from "../../controllers/auth/change.password.controller";
 import { logout } from "../../controllers/auth/logout.controller";
 import { getAllUsers } from "../../controllers/auth/get.users.controller";
+import { deleteUser } from "../../controllers/auth/delete.user.controller";
 import authMiddleware from "../../middleware/auth.middleware";
 import { isAdmin } from "../../middleware/admin.middleware";
 
@@ -20,6 +21,7 @@ router.post("/login", login);
 router.post("/refresh-token", refreshToken);
 router.post("/logout", logout);
 router.get("/users", authMiddleware, isAdmin, getAllUsers);
+router.delete("/users/:id", authMiddleware, isAdmin, deleteUser);
 // OTP verification
 router.post("/verify-otp", OPTVerifyController);
 

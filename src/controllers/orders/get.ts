@@ -10,36 +10,10 @@ export const getMyOrders = async (
   res: Response
 ) => {
   try {
-    const orders = await OrderModel.aggregate([
-      {
-       $match: {
-  userId: new mongoose.Types.ObjectId(req.user?.userId),
-},
-      },
-
-      {
-        $lookup: {
-          from: "users", 
-          localField: "userId",
-          foreignField: "_id",
-          as: "user",
-        },
-      },
-
-      {
-        $unwind: "$user",
-      },
-
-      {
-        $project: {
-          totalAmount: 1,
-          products: 1,
-          createdAt: 1,
-          "user.fullname": 1,
-          "user.email": 1,
-        },
-      },
-    ]);
+    const orders = await OrderModel.find({ userId: req.user?.userId })
+      .populate("userId", "fullname email")
+      .populate("products.productId")
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
