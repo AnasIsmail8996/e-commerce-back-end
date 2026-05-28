@@ -1,18 +1,22 @@
-// import dns from "dns";
-
-// dns.setDefaultResultOrder("ipv4first");
 import dotenv from "dotenv";
 dotenv.config();
-console.log(process.env.MONGODB_URI); 
 
 import app from "./app";
 import connectDB from "./config/db";
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 connectDB();
 
-const PORT = process.env.PORT || 5000;
+// LOCAL ONLY
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export default app;

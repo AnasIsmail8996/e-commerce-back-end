@@ -7,7 +7,7 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization?.split(" ")[1] || req.cookies.accessToken;
+  const token = req.cookies.accessToken;
 
   if (!token) {
     return res.status(401).json({
@@ -17,15 +17,15 @@ const authMiddleware = (
   }
 
   try {
-const decoded = jwt.verify(
-  token,
-  process.env.ACCESS_SECRET as string
-) as {
-  userId: string;
-  role: string;
-};
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_SECRET as string
+    ) as {
+      userId: string;
+      role: string;
+    };
 
-req.user = decoded;
+    req.user = decoded;
 
     next();
   } catch (error) {

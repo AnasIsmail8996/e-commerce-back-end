@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import UserModel from "../../models/user.model";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import {
+  getAccessTokenCookieOptions,
+  getRefreshTokenCookieOptions,
+} from "../../utils/cookieOptions";
 
 
 export const login = async (req: Request, res: Response) => {
@@ -41,32 +45,23 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "7d" }
     );
 
-    const isProd = process.env.NODE_ENV === "production";
+    res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
+    res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
-      path: "/",
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    const safeUser = {
+      _id: user._id,
+      fullname: user.fullname,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+    };
 
     return res.json({
       message: "Login success",
       status: true,
-      accessToken,
-      refreshToken,
-      data: user,
+      data: safeUser,
     });
   } catch (error: any) {
-    return res.json({ message: error.message, status: false });
+    return res.status(500).json({ message: error.message, status: false });
   }
 };

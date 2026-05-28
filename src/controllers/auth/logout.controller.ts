@@ -1,12 +1,9 @@
 import { Request, Response } from "express";
+import { getClearCookieOptions } from "../../utils/cookieOptions";
 
 export const logout = (req: Request, res: Response) => {
   try {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
-    };
+    const cookieOptions = getClearCookieOptions();
 
     res.clearCookie("accessToken", cookieOptions);
     res.clearCookie("refreshToken", cookieOptions);
