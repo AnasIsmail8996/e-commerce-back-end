@@ -84,4 +84,11 @@ app.get("/", (_req, res) => {
   });
 });
 
+app.get("/api", (_req, res) => {
+  res.json({
+    success: true,
+    message: "API is live",
+  });
+});
+
 export default app;

@@ -1,20 +1,34 @@
 import mongoose from "mongoose";
 
+let connectionPromise: Promise<typeof mongoose> | null = null;
+
 const connectDB = async () => {
-  try {
-    const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI;
 
-    if (!uri) {
-      throw new Error("MONGODB_URI is missing in .env");
-    }
-
-    await mongoose.connect(uri);
-
-    console.log("MongoDB Connected 🚀");
-  } catch (error) {
-    console.log("DB Error:", error);
-    process.exit(1);
+  if (!uri) {
+    throw new Error("MONGODB_URI is missing");
   }
+
+  if (mongoose.connection.readyState === 1) {
+    return mongoose;
+  }
+
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  connectionPromise = mongoose
+    .connect(uri)
+    .then((conn) => {
+      console.log("MongoDB Connected");
+      return conn;
+    })
+    .catch((error) => {
+      connectionPromise = null;
+      throw error;
+    });
+
+  return connectionPromise;
 };
 
 export default connectDB;

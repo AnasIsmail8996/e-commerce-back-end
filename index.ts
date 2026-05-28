@@ -8,7 +8,10 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-connectDB();
+connectDB().catch((error) => {
+  // Keep the function process alive so routes can return controlled errors.
+  console.error("Initial DB connection failed:", error);
+});
 
 // LOCAL ONLY
 if (process.env.NODE_ENV !== "production") {
