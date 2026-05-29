@@ -12,6 +12,7 @@ import { getAllUsers } from "../../controllers/auth/get.users.controller";
 import { deleteUser } from "../../controllers/auth/delete.user.controller";
 import authMiddleware from "../../middleware/auth.middleware";
 import { isAdmin } from "../../middleware/admin.middleware";
+import { getMe } from "../../controllers/auth/me.controller";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/refresh-token", refreshToken);
 router.post("/logout", logout);
+router.get("/me", authMiddleware, getMe);
 router.get("/users", authMiddleware, isAdmin, getAllUsers);
 router.delete("/users/:id", authMiddleware, isAdmin, deleteUser);
 // OTP verification

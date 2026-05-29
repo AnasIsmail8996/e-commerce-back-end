@@ -38,26 +38,15 @@ const allowedOrigins = [
 const isLocalOrigin = (origin: string) =>
   /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
-// Allow any Vercel deployment domain (e.g. project.vercel.app)
 const isVercelOrigin = (origin: string) =>
-  /^https:\/\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.vercel\.app$/i.test(origin);
-
-// Detect production for CORS decisions
-const isProdDeployment =
-  process.env.NODE_ENV === "production" ||
-  process.env.VERCEL === "1" ||
-  process.env.VERCEL_ENV === "production";
-
+  /^https:\/\/[a-z0-9][a-z0-9-]*\.vercel\.app$/i.test(origin) ||
+  /^https:\/\/[a-z0-9][a-z0-9-]*\.vercel\.app\/?$/i.test(origin);
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
 
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    const normalizedOrigin =
-      normalizeOrigin(origin);
+    const normalizedOrigin = normalizeOrigin(origin);
 
     if (
       allowedOrigins.includes(normalizedOrigin) ||
@@ -67,29 +56,11 @@ const corsOptions: cors.CorsOptions = {
       return callback(null, true);
     }
 
-    return callback(
-      new Error(
-        `CORS blocked for origin: ${origin}`
-      )
-    );
+    return callback(null, true);
   },
-
   credentials: true,
-
-  methods: [
-    "GET",
-    "POST",
-    "PUT",
-    "DELETE",
-    "PATCH",
-    "OPTIONS",
-  ],
-
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "X-Requested-With",
-  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
 
