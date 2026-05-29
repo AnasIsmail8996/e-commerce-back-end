@@ -13,25 +13,19 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-const normalizeOrigin = (origin: string) =>
-  origin.replace(/\/$/, "").toLowerCase();
+const normalizeOrigin = (origin?: string) =>
+  (origin || "").replace(/\/$/, "").toLowerCase();
 
 const envOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-const CLIENT_ORIGIN =
-  process.env.CLIENT_ORIGIN || "http://localhost:5173";
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "";
+const ADMIN_ORIGIN = process.env.ADMIN_ORIGIN || "";
 
-const ADMIN_ORIGIN =
-  process.env.ADMIN_ORIGIN || "http://localhost:3000";
-
-const allowedOrigins = [
-  CLIENT_ORIGIN,
-  ADMIN_ORIGIN,
-  ...envOrigins,
-]
+const allowedOrigins = [CLIENT_ORIGIN, ADMIN_ORIGIN, ...envOrigins]
+  .filter(Boolean)
   .map(normalizeOrigin)
   .filter((origin, index, list) => list.indexOf(origin) === index);
 
@@ -44,9 +38,10 @@ const isVercelOrigin = (origin: string) =>
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
+    // allow requests with no origin (e.g., server-to-server, same-origin)
     if (!origin) return callback(null, true);
 
-    const normalizedOrigin = normalizeOrigin(origin);
+    const normalizedOrigin = normalizeOrigin(origin as string);
 
     if (
       allowedOrigins.includes(normalizedOrigin) ||
@@ -56,7 +51,8 @@ const corsOptions: cors.CorsOptions = {
       return callback(null, true);
     }
 
-    return callback(null, true);
+    // Explicitly reject unknown origins to surface CORS errors in the client
+    return callback(new Error("Not allowed by CORS"), false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
