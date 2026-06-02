@@ -3,9 +3,20 @@ import jwt from "jsonwebtoken";
 import UserModel from "../../models/user.model";
 import { AuthRequest } from "../../types/auth";
 
+const extractToken = (req: AuthRequest): string | undefined => {
+  const cookieToken = req.cookies?.accessToken;
+  if (cookieToken) return cookieToken;
+
+  const header = req.headers?.authorization;
+  if (typeof header === "string" && header.startsWith("Bearer ")) {
+    return header.slice("Bearer ".length).trim();
+  }
+  return undefined;
+};
+
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
-    const token = req.cookies.accessToken;
+    const token = extractToken(req);
 
     if (!token) {
       return res.status(401).json({ success: false, message: "No token" });
