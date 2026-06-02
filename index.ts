@@ -3,15 +3,20 @@ dotenv.config();
 
 import app from "./src/app";
 import connectDB from "./src/config/db";
+import { bootstrapAdmin } from "./src/config/bootstrapAdmin";
 
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-connectDB().catch((error) => {
-  console.error("MongoDB connection failed:", error.message);
-  process.exit(1);
-});
+connectDB()
+  .then(async () => {
+    await bootstrapAdmin();
+  })
+  .catch((error) => {
+    console.error("MongoDB connection failed:", error.message);
+    process.exit(1);
+  });
 
 // LOCAL ONLY
 if (process.env.NODE_ENV !== "production") {
