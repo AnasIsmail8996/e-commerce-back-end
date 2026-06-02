@@ -2,12 +2,14 @@ import { Request, Response } from "express";
 import ProductModel from "../../models/product.model";
 
 export const getAllProducts = async (
-  req: Request,
+  _req: Request,
   res: Response
 ) => {
   try {
     const products = await ProductModel.find()
-      .populate("createdBy", "fullname email");
+      .populate("createdBy", "fullname email")
+      .populate("category", "name slug")
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
@@ -17,7 +19,7 @@ export const getAllProducts = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message || "Failed to fetch products",
     });
   }
 };
@@ -27,9 +29,9 @@ export const getSingleProduct = async (
   res: Response
 ) => {
   try {
-    const product = await ProductModel.findById(
-      req.params.id
-    );
+    const product = await ProductModel.findById(req.params.id)
+      .populate("createdBy", "fullname email")
+      .populate("category", "name slug");
 
     if (!product) {
       return res.status(404).json({
@@ -46,7 +48,7 @@ export const getSingleProduct = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message || "Failed to fetch product",
     });
   }
 };

@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import ProductModel from "../../models/product.model";
+import CategoryModel from "../../models/category.model";
 import cloudinary from "../../config/cloudinary";
 import streamifier from "streamifier";
 
@@ -23,17 +25,29 @@ const uploadFromBuffer = (buffer: Buffer): Promise<any> =>
     streamifier.createReadStream(buffer).pipe(stream);
   });
 
+const isValidObjectId = (id: unknown) =>
+  typeof id === "string" &&
+  mongoose.Types.ObjectId.isValid(id) &&
+  String(new mongoose.Types.ObjectId(id)) === id;
+
  const create = async (
   req: AuthRequest,
   res: Response
 ) => {
   try {
-    const { title, description, price } = req.body;
+    const { title, description, price, category } = req.body;
 
-    if (!title || !description || !price) {
+    if (!title || !description || !price || !category) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "Title, description, price, and category are required",
+      });
+    }
+
+    if (!isValidObjectId(category)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category id",
       });
     }
 
@@ -42,6 +56,14 @@ const uploadFromBuffer = (buffer: Buffer): Promise<any> =>
       return res.status(400).json({
         success: false,
         message: "Price must be a valid non-negative number",
+      });
+    }
+
+    const categoryExists = await CategoryModel.findById(category);
+    if (!categoryExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
       });
     }
 
@@ -60,13 +82,13 @@ const uploadFromBuffer = (buffer: Buffer): Promise<any> =>
       description,
       price: parsedPrice,
       images: imageUrls,
+      category,
       createdBy: req.user?.userId,
     });
 
-    const populated = await ProductModel.findById(product._id).populate(
-      "createdBy",
-      "fullname email"
-    );
+    const populated = await ProductModel.findById(product._id)
+      .populate("createdBy", "fullname email")
+      .populate("category", "name slug");
 
     return res.status(201).json({
       success: true,

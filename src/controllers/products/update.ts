@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Request, Response } from "express";
 import ProductModel from "../../models/product.model";
+import CategoryModel from "../../models/category.model";
 import cloudinary from "../../config/cloudinary";
 import streamifier from "streamifier";
 
@@ -24,12 +25,17 @@ const uploadFromBuffer = (buffer: Buffer): Promise<any> =>
     streamifier.createReadStream(buffer).pipe(stream);
   });
 
+const isValidObjectId = (id: unknown) =>
+  typeof id === "string" &&
+  mongoose.Types.ObjectId.isValid(id) &&
+  String(new mongoose.Types.ObjectId(id)) === id;
+
  const update = async (
   req: AuthRequest,
   res: Response
 ) => {
   try {
-    const { title, description, price } = req.body;
+    const { title, description, price, category } = req.body;
     const { id } = req.params;
 
     if (!mongoose.isValidObjectId(id)) {
@@ -46,6 +52,22 @@ const uploadFromBuffer = (buffer: Buffer): Promise<any> =>
         success: false,
         message: "Product not found",
       });
+    }
+
+    if (category !== undefined) {
+      if (!isValidObjectId(category)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid category id",
+        });
+      }
+      const categoryExists = await CategoryModel.findById(category);
+      if (!categoryExists) {
+        return res.status(404).json({
+          success: false,
+          message: "Category not found",
+        });
+      }
     }
 
     let imageUrls = product.images;
@@ -65,12 +87,17 @@ const uploadFromBuffer = (buffer: Buffer): Promise<any> =>
       price: price !== undefined ? Number(price) : product.price,
       images: imageUrls,
     };
+    if (category !== undefined && isValidObjectId(category)) {
+      updates.category = category;
+    }
 
     const updatedProduct = await ProductModel.findByIdAndUpdate(
       id,
       updates,
       { new: true }
-    ).populate("createdBy", "fullname email");
+    )
+      .populate("createdBy", "fullname email")
+      .populate("category", "name slug");
 
     return res.status(200).json({
       success: true,
