@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import ProductModel from "../../models/product.model";
-import  cloudinary  from "../../config/cloudinary";
+import cloudinary from "../../config/cloudinary";
 import fs from "fs";
 
 interface AuthRequest extends Request {
@@ -17,7 +17,15 @@ interface AuthRequest extends Request {
 ) => {
   try {
     const { title, description, price } = req.body;
-      const { id } = req.params;
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product id",
+      });
+    }
+
     const product = await ProductModel.findById(id);
 
     if (!product) {
@@ -29,34 +37,34 @@ interface AuthRequest extends Request {
 
     let imageUrls = product.images;
 
-  const files = req.files as Express.Multer.File[];
-  
-     if (files && files.length > 0) {
-    for (const file of files) {
-  
-      const uploaded = await cloudinary.uploader.upload(
-        file.path,
-        {
-          folder: "products",
-        }
-      );
-  
-      imageUrls.push(uploaded.secure_url);
-  
-      fs.unlinkSync(file.path);
-    }
-     }
+    const files = req.files as Express.Multer.File[];
 
-    const updatedProduct =
-      await ProductModel.findByIdAndUpdate(id,
-        {
-          title: title || product.title,
-          description: description || product.description,
-          price: price || product.price,
-          images: imageUrls,
-        },
-        { new: true }
-      );
+    if (files && files.length > 0) {
+      for (const file of files) {
+        try {
+          const uploaded = await cloudinary.uploader.upload(
+            file.path,
+            { folder: "products" }
+          );
+          imageUrls.push(uploaded.secure_url);
+        } finally {
+          try { fs.unlinkSync(file.path); } catch { /* file may already be removed */ }
+        }
+      }
+    }
+
+    const updates: Record<string, unknown> = {
+      title: title ?? product.title,
+      description: description ?? product.description,
+      price: price !== undefined ? Number(price) : product.price,
+      images: imageUrls,
+    };
+
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true }
+    ).populate("createdBy", "fullname email");
 
     return res.status(200).json({
       success: true,
@@ -65,14 +73,15 @@ interface AuthRequest extends Request {
     });
 
   } catch (error: any) {
-    console.log(error);
+    console.error("Product update error:", error);
 
     return res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message || "Failed to update product",
     });
   }
 };
 
+import mongoose from "mongoose";
 
 export default update;
