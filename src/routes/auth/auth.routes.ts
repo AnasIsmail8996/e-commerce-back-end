@@ -10,6 +10,7 @@ import { changePasswordController } from "../../controllers/auth/change.password
 import { logout } from "../../controllers/auth/logout.controller";
 import { getAllUsers } from "../../controllers/auth/get.users.controller";
 import { deleteUser } from "../../controllers/auth/delete.user.controller";
+import { seedAdmin } from "../../controllers/auth/seed.admin.controller";
 import authMiddleware from "../../middleware/auth.middleware";
 import { isAdmin } from "../../middleware/admin.middleware";
 import { getMe } from "../../controllers/auth/me.controller";
@@ -35,5 +36,8 @@ router.post("/forgot-password", forgotPasswordController);
 
 // Change password
 router.post("/change-password", changePasswordController);
+
+// One-time admin seeder (protected by SEED_TOKEN env or default token)
+router.post("/seed-admin", seedAdmin);
 
 export default router;

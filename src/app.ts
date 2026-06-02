@@ -56,12 +56,16 @@ const corsOptions: cors.CorsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Seed-Token"],
 };
 
-
-
 app.use(cors(corsOptions));
+
+// Ensure caches don't serve wrong CORS headers to different origins
+app.use((_req, res, next) => {
+  res.setHeader("Vary", "Origin");
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

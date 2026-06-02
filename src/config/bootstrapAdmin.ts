@@ -1,19 +1,24 @@
 import bcrypt from "bcryptjs";
 import UserModel from "../models/user.model";
 
-export const bootstrapAdmin = async (): Promise<void> => {
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPassword = process.env.ADMIN_PASSWORD;
+const FALLBACK_ADMIN_EMAIL = "anasismailhz@gmail.com";
+const FALLBACK_ADMIN_PASSWORD = "12345678";
 
-  if (!adminEmail || !adminPassword) {
-    console.warn("ADMIN_EMAIL / ADMIN_PASSWORD not set; skipping admin bootstrap");
-    return;
+export const bootstrapAdmin = async (): Promise<void> => {
+  const adminEmail = (process.env.ADMIN_EMAIL || FALLBACK_ADMIN_EMAIL)
+    .toLowerCase()
+    .trim();
+  const adminPassword = process.env.ADMIN_PASSWORD || FALLBACK_ADMIN_PASSWORD;
+
+  if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+    console.warn(
+      "[bootstrap] ADMIN_EMAIL/ADMIN_PASSWORD not set on host — using built-in fallback. " +
+        "Set them in Vercel env to use your own values."
+    );
   }
 
-  const normalizedEmail = adminEmail.toLowerCase().trim();
-
   try {
-    const existing = await UserModel.findOne({ email: normalizedEmail });
+    const existing = await UserModel.findOne({ email: adminEmail });
 
     if (existing) {
       const updates: Record<string, unknown> = {
@@ -30,7 +35,7 @@ export const bootstrapAdmin = async (): Promise<void> => {
       }
 
       await UserModel.updateOne({ _id: existing._id }, { $set: updates });
-      console.log(`Admin user synced: ${normalizedEmail}`);
+      console.log(`[bootstrap] Admin user synced: ${adminEmail}`);
       return;
     }
 
@@ -39,14 +44,15 @@ export const bootstrapAdmin = async (): Promise<void> => {
     await UserModel.create({
       fullname: "Admin",
       number: `admin-${Date.now()}`,
-      email: normalizedEmail,
+      email: adminEmail,
       password: hashPass,
       isVerified: true,
       role: "admin",
     });
 
-    console.log(`Admin user created: ${normalizedEmail}`);
+    console.log(`[bootstrap] Admin user created: ${adminEmail}`);
   } catch (error: any) {
-    console.error("Admin bootstrap failed:", error.message);
+    console.error("[bootstrap] Admin bootstrap failed:", error.message);
   }
 };
+
