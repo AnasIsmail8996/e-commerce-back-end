@@ -1,7 +1,6 @@
 import { Response } from "express";
 import OrderModel from "../../models/order.model";
 import { AuthRequest } from "../../types/auth";
-import { notifyAdminsOfNewOrder } from "../../utils/notifyAdmins";
 
 export const createOrder = async (
   req: AuthRequest,
@@ -23,12 +22,9 @@ export const createOrder = async (
       totalAmount,
     });
 
-    notifyAdminsOfNewOrder(order._id, order.totalAmount, order.status).catch(
-      (err) => console.error("Socket notify failed (create):", err.message)
-    );
-
     return res.status(201).json({
-      message: "Order created successfully",
+     message: "Order created successfully",
+
       success: true,
       order,
     });

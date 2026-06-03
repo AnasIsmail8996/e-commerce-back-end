@@ -1,7 +1,6 @@
 import { Response } from "express";
 import OrderModel from "../../models/order.model";
 import { AuthRequest } from "../../types/auth";
-import { notifyAdminsOfNewOrder } from "../../utils/notifyAdmins";
 
 export const checkout = async (req: AuthRequest, res: Response) => {
   try {
@@ -30,10 +29,6 @@ export const checkout = async (req: AuthRequest, res: Response) => {
       },
       status: "pending",
     });
-
-    notifyAdminsOfNewOrder(order._id, order.totalAmount, order.status).catch(
-      (err) => console.error("Socket notify failed (checkout):", err.message)
-    );
 
     return res.status(201).json({
       success: true,
