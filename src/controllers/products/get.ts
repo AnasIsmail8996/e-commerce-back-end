@@ -1,12 +1,31 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import ProductModel from "../../models/product.model";
+import CategoryModel from "../../models/category.model";
 
 export const getAllProducts = async (
-  _req: Request,
+  req: Request,
   res: Response
 ) => {
   try {
-    const products = await ProductModel.find()
+    const { category } = req.query;
+    const filter: Record<string, unknown> = {};
+
+    if (category && typeof category === "string" && category.trim()) {
+      let categoryDoc = null;
+      if (mongoose.isValidObjectId(category)) {
+        categoryDoc = await CategoryModel.findById(category);
+      }
+      if (!categoryDoc) {
+        categoryDoc = await CategoryModel.findOne({ slug: category.toLowerCase() });
+      }
+      if (!categoryDoc) {
+        return res.status(200).json({ success: true, products: [] });
+      }
+      filter.category = categoryDoc._id;
+    }
+
+    const products = await ProductModel.find(filter)
       .populate("createdBy", "fullname email")
       .populate("category", "name slug")
       .sort({ createdAt: -1 });
