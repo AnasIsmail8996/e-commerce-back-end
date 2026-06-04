@@ -1,6 +1,7 @@
 import { Response } from "express";
 import OrderModel from "../../models/order.model";
 import { AuthRequest } from "../../types/auth";
+import generateOrderNo from "../../utils/generateOrderNo";
 
 export const createOrder = async (
   req: AuthRequest,
@@ -16,7 +17,10 @@ export const createOrder = async (
       });
     }
 
+    const orderNo = await generateOrderNo();
+
     const order = await OrderModel.create({
+      orderNo,
       userId: req.user?.userId,
       products,
       totalAmount,

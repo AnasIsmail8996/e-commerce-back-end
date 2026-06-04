@@ -1,6 +1,7 @@
 import { Response } from "express";
 import OrderModel from "../../models/order.model";
 import { AuthRequest } from "../../types/auth";
+import generateOrderNo from "../../utils/generateOrderNo";
 
 export const checkout = async (req: AuthRequest, res: Response) => {
   try {
@@ -15,7 +16,10 @@ export const checkout = async (req: AuthRequest, res: Response) => {
       totalAmount,
     } = req.body;
 
+    const orderNo = await generateOrderNo();
+
     const order = await OrderModel.create({
+      orderNo,
       userId: req.user?.userId,
       products,
       totalAmount,

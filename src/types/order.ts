@@ -7,6 +7,7 @@ export interface OrderProduct {
 
 
 export interface IOrder {
+  orderNo: string;
   userId: Types.ObjectId;
   products: OrderProduct[];
   totalAmount: number;
