@@ -1,6 +1,7 @@
 import { CookieOptions } from "express";
 
-const isProd = process.env.NODE_ENV === "production";
+const isProd =
+  process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 
 // If COOKIE_DOMAIN is set in env (e.g. ".vercel.app"), the cookie is
 // shared across every subdomain of that domain so the auth works
