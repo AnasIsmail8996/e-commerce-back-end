@@ -14,30 +14,22 @@ import { seedAdmin } from "../../controllers/auth/seed.admin.controller";
 import authMiddleware from "../../middleware/auth.middleware";
 import { isAdmin } from "../../middleware/admin.middleware";
 import { getMe } from "../../controllers/auth/me.controller";
+import { authLimiter, strictLimiter } from "../../utils/rateLimiter";
 
 const router = Router();
 
 // ---------------- AUTH ROUTES ----------------
-router.post("/register", register);
-router.post("/login", login);
+router.post("/register", authLimiter, register);
+router.post("/login", authLimiter, login);
 router.post("/refresh-token", refreshToken);
 router.post("/logout", logout);
 router.get("/me", authMiddleware, getMe);
 router.get("/users", authMiddleware, isAdmin, getAllUsers);
 router.delete("/users/:id", authMiddleware, isAdmin, deleteUser);
-// OTP verification
-router.post("/verify-otp", OPTVerifyController);
-
-// Reset OTP
-router.post("/reset-otp", resetOTPController);
-
-// Forgot password
-router.post("/forgot-password", forgotPasswordController);
-
-// Change password
+router.post("/verify-otp", authLimiter, OPTVerifyController);
+router.post("/reset-otp", authLimiter, resetOTPController);
+router.post("/forgot-password", authLimiter, forgotPasswordController);
 router.post("/change-password", changePasswordController);
-
-// One-time admin seeder (protected by SEED_TOKEN env or default token)
-router.post("/seed-admin", seedAdmin);
+router.post("/seed-admin", strictLimiter, seedAdmin);
 
 export default router;

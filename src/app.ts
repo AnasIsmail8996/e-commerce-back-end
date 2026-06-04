@@ -4,6 +4,7 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 
 import authRoutes from "./routes/auth/auth.routes";
 import productsRoutes from "./routes/products/products.routes";
@@ -61,6 +62,8 @@ const corsOptions: cors.CorsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Seed-Token"],
 };
 
+app.use(helmet());
+
 app.use(cors(corsOptions));
 
 // Ensure caches don't serve wrong CORS headers to different origins
@@ -69,8 +72,8 @@ app.use((_req, res, next) => {
   next();
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
 const apiRouter = express.Router();
@@ -94,6 +97,14 @@ app.get("/api", (_req, res) => {
   res.json({
     success: true,
     message: "API is live",
+  });
+});
+
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("Unhandled error:", err);
+  return res.status(500).json({
+    success: false,
+    message: err.message || "Internal server error",
   });
 });
 
