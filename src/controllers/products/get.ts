@@ -8,7 +8,11 @@ export const getAllProducts = async (
   res: Response
 ) => {
   try {
-    const { category } = req.query;
+    const { category, search } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 12;
+    const skip = (page - 1) * limit;
+
     const filter: Record<string, unknown> = {};
 
     if (category && typeof category === "string" && category.trim()) {
@@ -20,19 +24,34 @@ export const getAllProducts = async (
         categoryDoc = await CategoryModel.findOne({ slug: category.toLowerCase() });
       }
       if (!categoryDoc) {
-        return res.status(200).json({ success: true, products: [] });
+        return res.status(200).json({ success: true, products: [], pagination: { currentPage: page, totalPages: 0, totalProducts: 0, limit, hasNextPage: false, hasPrevPage: false } });
       }
       filter.category = categoryDoc._id;
     }
 
+    if (search && typeof search === "string" && search.trim()) {
+      filter.title = { $regex: search.trim(), $options: "i" };
+    }
+
+    const totalProducts = await ProductModel.countDocuments(filter);
     const products = await ProductModel.find(filter)
       .populate("createdBy", "fullname email")
       .populate("category", "name slug")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     return res.status(200).json({
       success: true,
       products,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalProducts / limit),
+        totalProducts,
+        limit,
+        hasNextPage: page * limit < totalProducts,
+        hasPrevPage: page > 1,
+      },
     });
 
   } catch (error: any) {
