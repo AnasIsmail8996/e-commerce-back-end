@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth/auth.routes";
 import productsRoutes from "./routes/products/products.routes";
 import orderRoutes from "./routes/order/order.routes";
 import categoryRoutes from "./routes/categories/category.routes";
+import siteConfigRoutes from "./routes/site-config/site-config.routes";
 
 const app = express();
 
@@ -78,6 +79,7 @@ apiRouter.use("/auth", authRoutes);
 apiRouter.use("/products", productsRoutes);
 apiRouter.use("/orders", orderRoutes);
 apiRouter.use("/categories", categoryRoutes);
+apiRouter.use("/site-config", siteConfigRoutes);
 
 app.use("/api", apiRouter);
 
