@@ -22,7 +22,7 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { _id: user._id, email },
-      process.env.SECRET_KEY as string,
+      process.env.JWT_SECRET as string,
       { expiresIn: "10m" }
     );
 

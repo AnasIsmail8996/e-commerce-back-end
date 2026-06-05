@@ -48,6 +48,20 @@ shippingAddress: {
       enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
+    paymentMethod: {
+      type: String,
+      enum: ["stripe", "cash"],
+      default: "cash",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+    stripePaymentIntentId: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

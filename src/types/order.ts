@@ -5,7 +5,6 @@ export interface OrderProduct {
   quantity: number;
 }
 
-
 export interface IOrder {
   orderNo: string;
   userId: Types.ObjectId;
@@ -19,5 +18,8 @@ export interface IOrder {
     postalCode: string;
     country: string;
   };
-  status?: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  paymentMethod: "stripe" | "cash";
+  paymentStatus: "pending" | "paid" | "failed";
+  stripePaymentIntentId?: string;
 }

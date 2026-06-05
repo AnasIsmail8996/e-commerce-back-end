@@ -12,7 +12,7 @@ export const changePasswordController = async (req: Request, res: Response) => {
       return res.json({ message: "Missing fields", status: false });
     }
 
-    const decoded = jwt.verify(token, process.env.SECRET_KEY as string) as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
 
     if (!decoded?._id) {
       return res.json({ message: "Invalid token", status: false });

@@ -10,9 +10,7 @@ import { deleteOrder } from "../../controllers/orders/delete";
 import { updateOrderStatus } from "../../controllers/orders/update.status";
 import { isUser } from "../../middleware/user.middleware";
 import { checkout } from "../../controllers/orders/checkout";
-
 const router = express.Router();
-
 
 router.post("/create", authMiddleware, isUser, createOrder);
 router.get("/my", authMiddleware, isUser, getMyOrders);

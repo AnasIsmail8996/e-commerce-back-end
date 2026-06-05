@@ -13,6 +13,7 @@ import categoryRoutes from "./routes/categories/category.routes";
 import siteConfigRoutes from "./routes/site-config/site-config.routes";
 import subscriberRoutes from "./routes/subscribers/subscriber.routes";
 import contactRoutes from "./routes/contacts/contact.routes";
+import { stripeWebhook } from "./controllers/orders/webhook";
 
 const app = express();
 
@@ -73,6 +74,9 @@ app.use((_req, res, next) => {
   res.setHeader("Vary", "Origin");
   next();
 });
+
+// Stripe webhook needs raw body before JSON parser
+app.post("/api/orders/webhook", express.raw({ type: "application/json" }), stripeWebhook);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
