@@ -11,10 +11,16 @@ export const stripeWebhook = async (req: Request, res: Response) => {
     return res.status(500).json({ received: false });
   }
 
+  const rawBody = (req as any).rawBody;
+  if (!rawBody) {
+    console.error("rawBody not available — verify middleware may not be running");
+    return res.status(400).json({ received: false });
+  }
+
   let event;
 
   try {
-    event = getStripe().webhooks.constructEvent(req.body, sig, webhookSecret);
+    event = getStripe().webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err: any) {
     console.error("Webhook signature verification failed:", err.message);
     return res.status(400).json({ received: false });

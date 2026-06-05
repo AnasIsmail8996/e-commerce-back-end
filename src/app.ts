@@ -72,10 +72,15 @@ app.use((_req, res, next) => {
   next();
 });
 
-// Stripe webhook needs raw body before JSON parser
-app.post("/api/orders/webhook", express.raw({ type: "application/json" }), stripeWebhook);
-
-app.use(express.json({ limit: "10mb" }));
+// Capture raw body before JSON parser destroys it (needed for Stripe webhook)
+app.use(
+  express.json({
+    limit: "10mb",
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf.toString();
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
