@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import stripe from "../../config/stripe";
+import { getStripe } from "../../config/stripe";
 import OrderModel from "../../models/order.model";
 
 export const stripeWebhook = async (req: Request, res: Response) => {
@@ -14,7 +14,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    event = getStripe().webhooks.constructEvent(req.body, sig, webhookSecret);
   } catch (err: any) {
     console.error("Webhook signature verification failed:", err.message);
     return res.status(400).json({ received: false });

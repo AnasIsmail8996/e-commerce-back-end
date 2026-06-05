@@ -1,7 +1,17 @@
-import Stripe from "stripe";
+import StripeDefault from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2026-05-27.dahlia",
-});
+let _stripe: ReturnType<typeof StripeDefault> | null = null;
 
-export default stripe;
+export function getStripe() {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error("STRIPE_SECRET_KEY is not set");
+    }
+    const stripe = new StripeDefault(key, {
+      apiVersion: "2026-05-27.dahlia",
+    });
+    _stripe = stripe;
+  }
+  return _stripe;
+}

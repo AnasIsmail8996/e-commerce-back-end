@@ -2,7 +2,7 @@ import { Response } from "express";
 import OrderModel from "../../models/order.model";
 import { AuthRequest } from "../../types/auth";
 import generateOrderNo from "../../utils/generateOrderNo";
-import stripe from "../../config/stripe";
+import { getStripe } from "../../config/stripe";
 
 export const checkout = async (req: AuthRequest, res: Response) => {
   try {
@@ -55,7 +55,7 @@ export const checkout = async (req: AuthRequest, res: Response) => {
     let clientSecret: string | null = null;
 
     if (paymentMethod === "stripe") {
-      const paymentIntent = await stripe.paymentIntents.create({
+      const paymentIntent = await getStripe().paymentIntents.create({
         amount: Math.round(totalAmount * 100),
         currency: "usd",
         metadata: { orderId: order._id.toString(), orderNo },
