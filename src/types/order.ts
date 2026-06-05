@@ -22,4 +22,5 @@ export interface IOrder {
   paymentMethod: "stripe" | "cash";
   paymentStatus: "pending" | "paid" | "failed";
   stripePaymentIntentId?: string;
+  stripeSessionId?: string;
 }

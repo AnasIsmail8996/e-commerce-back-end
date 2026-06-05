@@ -20,20 +20,21 @@ export const stripeWebhook = async (req: Request, res: Response) => {
     return res.status(400).json({ received: false });
   }
 
-  if (event.type === "payment_intent.succeeded") {
-    const paymentIntent = event.data.object;
-    const orderId = paymentIntent.metadata?.orderId;
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const orderId = session.metadata?.orderId;
 
     if (orderId) {
       await OrderModel.findByIdAndUpdate(orderId, {
         paymentStatus: "paid",
+        stripeSessionId: session.id,
       });
     }
   }
 
-  if (event.type === "payment_intent.payment_failed") {
-    const paymentIntent = event.data.object;
-    const orderId = paymentIntent.metadata?.orderId;
+  if (event.type === "checkout.session.expired" || event.type === "payment_intent.payment_failed") {
+    const session = event.data.object;
+    const orderId = session.metadata?.orderId;
 
     if (orderId) {
       await OrderModel.findByIdAndUpdate(orderId, {

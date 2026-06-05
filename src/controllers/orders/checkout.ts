@@ -4,6 +4,8 @@ import { AuthRequest } from "../../types/auth";
 import generateOrderNo from "../../utils/generateOrderNo";
 import { getStripe } from "../../config/stripe";
 
+const CLIENT_URL = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+
 export const checkout = async (req: AuthRequest, res: Response) => {
   try {
     const {
@@ -49,29 +51,43 @@ export const checkout = async (req: AuthRequest, res: Response) => {
       shippingAddress: { fullName, phone, address, city, postalCode, country },
       status: "pending",
       paymentMethod,
-      paymentStatus: paymentMethod === "cash" ? "pending" : "pending",
+      paymentStatus: "pending",
     });
 
-    let clientSecret: string | null = null;
+    let url: string | null = null;
 
     if (paymentMethod === "stripe") {
-      const paymentIntent = await getStripe().paymentIntents.create({
-        amount: Math.round(totalAmount * 100),
-        currency: "usd",
+      const session = await getStripe().checkout.sessions.create({
+        mode: "payment",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Order #${orderNo}`,
+              },
+              unit_amount: Math.round(totalAmount * 100),
+            },
+            quantity: 1,
+          },
+        ],
         metadata: { orderId: order._id.toString(), orderNo },
+        success_url: `${CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${CLIENT_URL}/checkout?cancelled=true`,
       });
 
-      order.stripePaymentIntentId = paymentIntent.id;
+      order.stripeSessionId = session.id;
       await order.save();
 
-      clientSecret = paymentIntent.client_secret;
+      url = session.url;
     }
 
     return res.status(201).json({
       success: true,
       message: "Order placed successfully",
       order,
-      clientSecret,
+      url,
     });
   } catch (error: any) {
     return res.status(500).json({

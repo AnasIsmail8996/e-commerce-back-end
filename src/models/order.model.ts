@@ -62,6 +62,10 @@ shippingAddress: {
       type: String,
       default: null,
     },
+    stripeSessionId: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
