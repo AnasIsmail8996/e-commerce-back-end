@@ -13,7 +13,6 @@ import categoryRoutes from "./routes/categories/category.routes";
 import siteConfigRoutes from "./routes/site-config/site-config.routes";
 import subscriberRoutes from "./routes/subscribers/subscriber.routes";
 import contactRoutes from "./routes/contacts/contact.routes";
-import { stripeWebhook } from "./controllers/orders/webhook";
 
 const app = express();
 
@@ -44,7 +43,6 @@ const isVercelOrigin = (origin: string) =>
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // allow requests with no origin (e.g., server-to-server, same-origin)
     if (!origin) return callback(null, true);
 
     const normalizedOrigin = normalizeOrigin(origin as string);
@@ -57,7 +55,6 @@ const corsOptions: cors.CorsOptions = {
       return callback(null, true);
     }
 
-    // Explicitly reject unknown origins to surface CORS errors in the client
     return callback(new Error("Not allowed by CORS"), false);
   },
   credentials: true,
@@ -69,14 +66,10 @@ app.use(helmet());
 
 app.use(cors(corsOptions));
 
-// Ensure caches don't serve wrong CORS headers to different origins
 app.use((_req, res, next) => {
   res.setHeader("Vary", "Origin");
   next();
 });
-
-// Stripe webhook needs raw body before JSON parser
-app.post("/api/orders/webhook", express.raw({ type: "application/json" }), stripeWebhook);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
