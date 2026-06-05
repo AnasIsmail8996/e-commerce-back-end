@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import ContactModel from "../../models/contact.model";
-import UserModel from "../../models/user.model";
 
 interface AuthRequest extends Request {
   user?: { userId: string; role: string };
 }
 
-export const createContact = async (req: Request, res: Response) => {
+export const createContact = async (req: AuthRequest, res: Response) => {
   try {
     const { name, email, contactNumber, message } = req.body;
 
@@ -24,12 +23,18 @@ export const createContact = async (req: Request, res: Response) => {
       });
     }
 
-    const contact = await ContactModel.create({
+    const contactData: Record<string, unknown> = {
       name: name.trim(),
       email: email.toLowerCase().trim(),
       contactNumber: contactNumber.trim(),
       message: message.trim(),
-    });
+    };
+
+    if (req.user?.userId) {
+      contactData.userId = req.user.userId;
+    }
+
+    const contact = await ContactModel.create(contactData);
 
     return res.status(201).json({
       success: true,
@@ -142,16 +147,15 @@ export const updateContactStatus = async (req: AuthRequest, res: Response) => {
 
 export const getMyContacts = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await UserModel.findById(req.user?.userId);
-    if (!user) {
-      return res.status(404).json({
+    if (!req.user?.userId) {
+      return res.status(401).json({
         success: false,
-        message: "User not found",
+        message: "Authentication required",
       });
     }
 
     const contacts = await ContactModel.find({
-      email: user.email?.toLowerCase().trim(),
+      userId: req.user.userId,
     }).sort({ createdAt: -1 });
 
     return res.status(200).json({

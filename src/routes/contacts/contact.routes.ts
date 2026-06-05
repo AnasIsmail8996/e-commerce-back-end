@@ -8,11 +8,12 @@ import {
   deleteContact,
 } from "../../controllers/contacts/contact.controller";
 import authMiddleware from "../../middleware/auth.middleware";
+import optionalAuth from "../../middleware/optionalAuth.middleware";
 import { isAdmin } from "../../middleware/admin.middleware";
 
 const router = express.Router();
 
-router.post("/", createContact);
+router.post("/", optionalAuth, createContact);
 router.get("/my", authMiddleware, getMyContacts);
 router.get("/", authMiddleware, isAdmin, getAllContacts);
 router.get("/:id", authMiddleware, isAdmin, getSingleContact);
