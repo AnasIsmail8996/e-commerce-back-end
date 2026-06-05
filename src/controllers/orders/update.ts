@@ -8,8 +8,7 @@ export const updateOrder = async (
 ) => {
   try {
     const { id } = req.params;
-   const { products, totalAmount } = req.body ;
-console.log("BODY:", req.body);
+    const { products, totalAmount } = req.body;
     const order = await OrderModel.findById(id);
 
     if (!order) {

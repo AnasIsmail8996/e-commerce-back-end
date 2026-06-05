@@ -1,17 +1,13 @@
-import express from "express";
-import {
-  createContact,
-  getAllContacts,
-  getSingleContact,
-  getMyContacts,
-  updateContactStatus,
-  deleteContact,
-} from "../../controllers/contacts/contact.controller";
+import { Router } from "express";
+import createContact from "../../controllers/contacts/create";
+import { getAllContacts, getSingleContact, getMyContacts } from "../../controllers/contacts/get";
+import updateContactStatus from "../../controllers/contacts/update";
+import deleteContact from "../../controllers/contacts/delete";
 import authMiddleware from "../../middleware/auth.middleware";
 import optionalAuth from "../../middleware/optionalAuth.middleware";
 import { isAdmin } from "../../middleware/admin.middleware";
 
-const router = express.Router();
+const router = Router();
 
 router.post("/", optionalAuth, createContact);
 router.get("/my", authMiddleware, getMyContacts);

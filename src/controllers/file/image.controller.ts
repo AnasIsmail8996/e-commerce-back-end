@@ -56,8 +56,6 @@ export const uploadImage = async (
     });
 
   } catch (error: any) {
-    console.log(error);
-
     return res.status(500).json({
       success: false,
       error: error.message || "Server Error",
