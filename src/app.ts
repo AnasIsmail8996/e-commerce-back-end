@@ -12,6 +12,7 @@ import orderRoutes from "./routes/order/order.routes";
 import categoryRoutes from "./routes/categories/category.routes";
 import siteConfigRoutes from "./routes/site-config/site-config.routes";
 import subscriberRoutes from "./routes/subscribers/subscriber.routes";
+import contactRoutes from "./routes/contacts/contact.routes";
 
 const app = express();
 
@@ -85,6 +86,7 @@ apiRouter.use("/orders", orderRoutes);
 apiRouter.use("/categories", categoryRoutes);
 apiRouter.use("/site-config", siteConfigRoutes);
 apiRouter.use("/subscribers", subscriberRoutes);
+apiRouter.use("/contacts", contactRoutes);
 
 app.use("/api", apiRouter);
 
