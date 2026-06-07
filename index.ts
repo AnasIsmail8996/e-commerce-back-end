@@ -12,10 +12,10 @@ if (process.env.NODE_ENV === "production") {
 connectDB()
   .then(async () => {
     await bootstrapAdmin();
+    console.log("MongoDB connected & admin bootstrapped");
   })
   .catch((error) => {
     console.error("MongoDB connection failed:", error.message);
-    process.exit(1);
   });
 
 // LOCAL ONLY

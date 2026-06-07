@@ -5,7 +5,9 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
+import mongoose from "mongoose";
 
+import connectDB from "./config/db";
 import authRoutes from "./routes/auth/auth.routes";
 import productsRoutes from "./routes/products/products.routes";
 import orderRoutes from "./routes/order/order.routes";
@@ -16,6 +18,16 @@ import contactRoutes from "./routes/contacts/contact.routes";
 import { stripeWebhook } from "./controllers/orders/webhook";
 
 const app = express();
+
+// Ensure DB is connected before handling API requests (serverless-friendly)
+app.use("/api", (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    connectDB().catch((err) => {
+      console.error("Lazy DB connection failed:", err.message);
+    });
+  }
+  next();
+});
 
 app.set("trust proxy", 1);
 
