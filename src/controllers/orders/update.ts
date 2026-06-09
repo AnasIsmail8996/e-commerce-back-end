@@ -35,7 +35,7 @@ export const updateOrder = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message || "Failed to update order",
     });
   }
 };

@@ -92,7 +92,7 @@ export const checkout = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message || "Checkout failed. Please try again",
     });
   }
 };

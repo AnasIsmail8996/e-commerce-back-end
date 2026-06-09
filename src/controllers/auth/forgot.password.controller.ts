@@ -12,12 +12,13 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.json({ message: "Email required", status: false });
+      return res.status(400).json({ success: false, message: "Please provide your email address" });
     }
 
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res.json({ message: "Invalid email", status: false });
+      // Don't reveal whether the email exists for security
+      return res.status(200).json({ success: true, message: "If an account exists with this email, a reset link has been sent" });
     }
 
     const token = jwt.sign(
@@ -35,8 +36,8 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
       html: resetPasswordEmailTemplate(user.fullname, FE_URL),
     });
 
-    return res.json({ message: "Check your email", status: true });
+    return res.status(200).json({ success: true, message: "If an account exists with this email, a reset link has been sent" });
   } catch (error: any) {
-    return res.json({ message: error.message, status: false });
+    return res.status(500).json({ success: false, message: error.message || "Failed to send reset email. Please try again" });
   }
 };

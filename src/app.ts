@@ -121,11 +121,64 @@ app.get("/api", (_req, res) => {
   });
 });
 
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("Unhandled error:", err);
+
+  // Mongoose validation error
+  if (typeof err === "object" && err !== null && (err as any).name === "ValidationError") {
+    const messages = Object.values((err as any).errors || {}).map(
+      (e: any) => e.message
+    );
+    return res.status(400).json({
+      success: false,
+      message: messages.join(". "),
+    });
+  }
+
+  // Mongoose duplicate key
+  if (typeof err === "object" && err !== null && (err as any).code === 11000) {
+    const field = Object.keys((err as any).keyValue || {})[0] || "field";
+    return res.status(409).json({
+      success: false,
+      message: `A record with this ${field} already exists`,
+    });
+  }
+
+  // Mongoose cast error (invalid ObjectId)
+  if (typeof err === "object" && err !== null && (err as any).name === "CastError") {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid ID format provided",
+    });
+  }
+
+  // Multer/file errors
+  if (typeof err === "object" && err !== null && (err as any).code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({
+      success: false,
+      message: "File too large. Maximum size is 5MB",
+    });
+  }
+
+  if (typeof err === "object" && err !== null && (err as any).code === "LIMIT_UNEXPECTED_FILE") {
+    return res.status(400).json({
+      success: false,
+      message: "Too many files uploaded",
+    });
+  }
+
+  // JWT errors
+  if (err instanceof Error && (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError")) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token. Please login again",
+    });
+  }
+
+  const message = err instanceof Error ? err.message : "Internal server error";
   return res.status(500).json({
     success: false,
-    message: err.message || "Internal server error",
+    message,
   });
 });
 

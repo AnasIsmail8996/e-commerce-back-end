@@ -18,8 +18,8 @@ export const refreshToken = async (
 
     if (!token) {
       return res.status(401).json({
-        status: false,
-        message: "No refresh token",
+        success: false,
+        message: "Session expired. Please login again",
       });
     }
 
@@ -38,8 +38,8 @@ export const refreshToken = async (
 
     if (!user) {
       return res.status(401).json({
-        status: false,
-        message: "User not found",
+        success: false,
+        message: "Account no longer exists",
       });
     }
 
@@ -90,11 +90,9 @@ export const refreshToken = async (
 
     // FINAL RESPONSE
     return res.status(200).json({
-      status: true,
+      success: true,
       message: "Session refreshed",
-
       user: safeUser,
-
       accessToken: newAccessToken,
     });
 
@@ -102,8 +100,8 @@ export const refreshToken = async (
     console.error("REFRESH TOKEN ERROR:", err);
 
     return res.status(403).json({
-      status: false,
-      message: "Invalid refresh token",
+      success: false,
+      message: "Session expired. Please login again",
     });
   }
 };

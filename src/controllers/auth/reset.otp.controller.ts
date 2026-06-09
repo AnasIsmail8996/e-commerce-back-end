@@ -11,12 +11,12 @@ export const resetOTPController = async (req: Request, res: Response) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.json({ message: "Invalid email", status: false });
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res.json({ message: "User not found", status: false });
+      return res.status(404).json({ success: false, message: "No account found with this email address" });
     }
 
     const otp = randomUUID().replace(/-/g, "").slice(0, 6);
@@ -30,11 +30,11 @@ export const resetOTPController = async (req: Request, res: Response) => {
 
     await OTPModel.create({ email, otp });
 
-    return res.json({
-      message: "Reset OTP sent to email",
-      status: true,
+    return res.status(200).json({
+      success: true,
+      message: "A new verification code has been sent to your email",
     });
   } catch (error: any) {
-    return res.json({ message: error.message, status: false });
+    return res.status(500).json({ success: false, message: error.message || "Failed to send OTP. Please try again" });
   }
 };

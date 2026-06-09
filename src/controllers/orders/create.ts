@@ -13,7 +13,7 @@ export const createOrder = async (
     if (!products || !totalAmount) {
       return res.status(400).json({
         success: false,
-        message: "Products and totalAmount required",
+        message: !products ? "Products are required" : "Total amount is required",
       });
     }
 
@@ -35,7 +35,7 @@ export const createOrder = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      error: error.message,
+      message: error.message || "Failed to create order",
     });
   }
 };

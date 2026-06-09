@@ -9,13 +9,22 @@ export const changePasswordController = async (req: Request, res: Response) => {
     const { token, newPassword } = req.body;
 
     if (!token || !newPassword) {
-      return res.json({ message: "Missing fields", status: false });
+      return res.status(400).json({ success: false, message: !token ? "Reset token is required" : "New password is required" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters long" });
+    }
+
+    let decoded: { _id: string; email: string };
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+    } catch {
+      return res.status(400).json({ success: false, message: "This reset link has expired or is invalid. Please request a new one" });
+    }
 
     if (!decoded?._id) {
-      return res.json({ message: "Invalid token", status: false });
+      return res.status(400).json({ success: false, message: "This reset link has expired or is invalid. Please request a new one" });
     }
 
     const hashPass = await bcrypt.hash(newPassword, 9);
@@ -24,8 +33,8 @@ export const changePasswordController = async (req: Request, res: Response) => {
       password: hashPass,
     });
 
-    return res.json({ message: "Password changed", status: true });
+    return res.status(200).json({ success: true, message: "Password changed successfully" });
   } catch (error: any) {
-    return res.json({ message: error.message, status: false });
+    return res.status(500).json({ success: false, message: error.message || "Failed to change password. Please try again" });
   }
 };

@@ -15,8 +15,8 @@ export const login = async (req: Request, res: Response) => {
     // VALIDATION
     if (!email || !password) {
       return res.status(400).json({
-        message: "Required fields missing",
-        status: false,
+        success: false,
+        message: !email ? "Email is required" : "Password is required",
       });
     }
 
@@ -25,16 +25,16 @@ export const login = async (req: Request, res: Response) => {
 
     if (!user) {
       return res.status(401).json({
-        message: "Invalid credentials",
-        status: false,
+        success: false,
+        message: "Invalid email or password",
       });
     }
 
     // VERIFY EMAIL
     if (!user.isVerified) {
       return res.status(403).json({
-        message: "Email not verified",
-        status: false,
+        success: false,
+        message: "Please verify your email before logging in. Check your inbox for the verification code",
       });
     }
 
@@ -43,8 +43,8 @@ export const login = async (req: Request, res: Response) => {
 
     if (!match) {
       return res.status(401).json({
-        message: "Invalid credentials",
-        status: false,
+        success: false,
+        message: "Invalid email or password",
       });
     }
 
@@ -95,11 +95,9 @@ export const login = async (req: Request, res: Response) => {
 
     // FINAL RESPONSE
     return res.status(200).json({
+      success: true,
       message: "Login successful",
-      status: true,
-
       user: safeUser,
-
       accessToken,
     });
 
@@ -107,8 +105,8 @@ export const login = async (req: Request, res: Response) => {
     console.error("LOGIN ERROR:", error);
 
     return res.status(500).json({
-      message: error.message || "Internal server error",
-      status: false,
+      success: false,
+      message: error.message || "Login failed due to a server error. Please try again",
     });
   }
 };

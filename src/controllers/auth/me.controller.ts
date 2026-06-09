@@ -19,7 +19,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
     const token = extractToken(req);
 
     if (!token) {
-      return res.status(401).json({ success: false, message: "No token" });
+      return res.status(401).json({ success: false, message: "Authentication required. Please login" });
     }
 
     const decoded = jwt.verify(
@@ -32,7 +32,7 @@ export const getMe = async (req: AuthRequest, res: Response) => {
     );
 
     if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+      return res.status(401).json({ success: false, message: "Account not found" });
     }
 
     return res.status(200).json({
@@ -46,6 +46,6 @@ export const getMe = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch {
-    return res.status(401).json({ success: false, message: "Invalid token" });
+    return res.status(401).json({ success: false, message: "Session expired. Please login again" });
   }
 };

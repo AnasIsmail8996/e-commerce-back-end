@@ -23,6 +23,6 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
 
     return res.json({ success: true, message: "User deleted successfully" });
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, message: error.message || "Failed to delete user" });
   }
 };

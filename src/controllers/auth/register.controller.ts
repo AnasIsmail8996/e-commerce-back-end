@@ -12,12 +12,17 @@ export const register = async (req: Request, res: Response) => {
     const { fullname, number, email, password } = req.body;
 
     if (!fullname || !number || !email || !password) {
-      return res.status(400).json({ message: "Required fields are missing", status: false });
+      const missing = [];
+      if (!fullname) missing.push("full name");
+      if (!number) missing.push("phone number");
+      if (!email) missing.push("email");
+      if (!password) missing.push("password");
+      return res.status(400).json({ success: false, message: `Missing required fields: ${missing.join(", ")}` });
     }
 
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ message: "Email already exists!", status: false });
+      return res.status(409).json({ success: false, message: "An account with this email already exists. Try logging in instead" });
     }
 
     const hashPass = await bcrypt.hash(password, 9);
@@ -44,13 +49,12 @@ export const register = async (req: Request, res: Response) => {
 
     await OTPModel.create({ email, otp });
 
-    return res.json({
-      message: "Signup successful! Verification email sent.",
-      status: true,
+    return res.status(201).json({
+      success: true,
+      message: "Account created! Please check your email for the verification code",
       data: newUser,
-      newUser,
     });
   } catch (error: any) {
-    return res.status(500).json({ message: error.message, status: false });
+    return res.status(500).json({ success: false, message: error.message || "Registration failed. Please try again" });
   }
 };
